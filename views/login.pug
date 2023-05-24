@@ -3,8 +3,23 @@ extends layouts/login-layout.pug
 block content 
     .loginContainer 
         h1 Login 
-        form(method="post") 
+        p.errorMessage #{errorMessage}
+        form(method="post", id="login-form") 
             input(type="text", name="logUsername", placeholder="Username or email", required="")
             input(type="password", name="logPassword", placeholder="Password", required="")
             input(type="submit", value="Login")
         a(href="/register") Need an account? Register here. 
+    
+    script. 
+        const form = document.getElementById('login-form');
+
+        form.addEventListener('submit', (event) => {
+            // Prevent the form from submitting normally
+           // event.preventDefault();
+  
+            // Perform your AJAX request or form submission
+  
+            // Clear the form fields after submission
+            console.log("clearing filed values for better user experience")
+           // form.reset();
+        });

@@ -1,46 +1,69 @@
 const express = require('express'); 
 const app = express(); 
-const bodyParser = require('body-parser'); 
 const router = express.Router(); 
 const User = require('../schemas/UserSchema');
+const bcrypt = require('bcrypt'); 
 
 app.set("view engine", "pug"); 
 app.set("views", "views"); 
 
-//body-parser 
-app.use(bodyParser.urlencoded({extended: false})); 
+//middleware to handle req/res body 
+app.use(express.json());
+app.use(express.urlencoded({extended: false})); 
 
 router.get("/", (req, res, next) => {
    res.status(200).render("register");
 })
 
-router.post("/", (req, res, next) => {
-
+router.post("/", async (req,res,next) => {
    var firstName = req.body.firstName.trim(); 
    var lastName = req.body.lastName.trim();
    var userName = req.body.userName.trim();
    var email = req.body.email.trim();
-   var password = req.body.password.trim();
+   var password = req.body.password;
 
-   var payload = req.body; 
-   
-   if(req.body.firstName && req.body.lastName && req.body.userName && req.body.email && req.body.password){
+   var payload = req.body;
 
-      //Find a user in the db with the provided details, if not present create a new one. 
-      User.findOne({
-         $or: [
-            {userName: userName},
-            {email: email}
+   if(firstName && lastName && userName && email && password){
+
+      var user = await User.findOne({
+         $or : [
+            {email : email},
+            {userName: userName}
          ]
       })
-   } 
-   else {
-      payload.errorMessage = "Make sure all the fields has a valid value"; 
+      .catch((error) => {
+         console.log(error);
+         payload.errorMessage= "Something went wrong"; 
+         res.status(200).render("register", payload)
+      }) 
+      
+      if(user == null){
+ 
+         var data = req.body; 
+         data.password = await bcrypt.hash(password, 10)// 2^10 crypts
+         User.create(data)
+         .then( (user) => {
+            req.session.user = user; 
+            return res.redirect("/")
+         })
+      }
+      else {
+         if(email == user.email){
+            payload.errorMessage = "Email is already in use";    
+         }
+         else{
+            payload.errorMessage = "user name is already in use"; 
+         }
+         return res.status(200).render("register",payload);
+      }
+      
    }
-
-   res.status(200).render("register");
-}) 
-
+   else {
+      payload.errorMessage = "Verify all fields are entered and valid"; 
+      res.status(200).render("register",payload); 
+   }
+})
 
 module.exports = router; 
 
