@@ -10,16 +10,4 @@ block content
             input(type="submit", value="Login")
         a(href="/register") Need an account? Register here. 
     
-    script. 
-        const form = document.getElementById('login-form');
-
-        form.addEventListener('submit', (event) => {
-            // Prevent the form from submitting normally
-           // event.preventDefault();
-  
-            // Perform your AJAX request or form submission
-  
-            // Clear the form fields after submission
-            console.log("clearing filed values for better user experience")
-           // form.reset();
-        });
+    

@@ -36,7 +36,8 @@ app.use(session({
 //Routes 
 const loginRoute = require('./routes/loginRoutes'); 
 const registerRoute = require('./routes/registerRoutes'); 
-const logoutRoute = require('./routes/logoutRoute')
+const logoutRoute = require('./routes/logoutRoute');
+
 
 //app.use(morgan(logFormat));
 app.use("/login", loginRoute); 
