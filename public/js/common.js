@@ -37,21 +37,57 @@ $("#submitPostButton").click((event) => {
    })
 })
 
+//like-button functionality
+$(document).on("click", ".likeButton", (event)=> {
+   var button = $(event.target); 
+   var postId = getPostIdfromElement(button);
+
+   $.ajax({
+      url: `/api/posts/${postId}/like`, 
+      type: "PUT", 
+      success : (postData) => {
+         button.find("span").text(postData.likes.length || ""); 
+
+         if(postData.likes.includes(userLoggedIn._id)){
+            button.addClass("active");
+         } 
+         else {
+            button.removeClass("active");
+         }
+      }
+   })
+}) 
+
+function getPostIdfromElement(element){
+   var isRoot = element.hasClass("post"); 
+   var rootElement = isRoot ? element : element.closest(".post"); 
+   var postId = rootElement.data().id; 
+
+   if(postId === undefined){
+      return alert("post id is undefined"); 
+   } 
+
+   return postId; 
+}
+
 function createPostHtml(postData) {
    
    var postedBy = postData.postedBy; 
-   var displayName = postedBy.firstName + " " + postedBy.lastName; 
-
-   //let's modify timestamp, calling new Date() will create a new instance of Date object, 
-   //representing the current data and time according to the system's clock on the user's device.  
-   var timestamp = timeDifference(new Date(), new Date(postData.createdAt)); 
 
    //check if postedBy is populated 
    if(postedBy._id === undefined){
       return console.log("User object not populated"); 
    }
 
-   return `<div class='post'> 
+   var displayName = postedBy.firstName + " " + postedBy.lastName; 
+
+   //let's modify timestamp, calling new Date() will create a new instance of Date object, 
+   //representing the current data and time according to the system's clock on the user's device.  
+   var timestamp = timeDifference(new Date(), new Date(postData.createdAt)); 
+
+   var likeButtonActiveClass = postData.likes.includes(userLoggedIn._id) ? "active" : ""; 
+
+   return `<div class='post' data-id="${postData._id}"> 
                 <div class='mainContentContainer'> 
                    <div class='userImageContainer'> 
                        <img src='${postedBy.profilePic}'> 
@@ -71,13 +107,14 @@ function createPostHtml(postData) {
                             <i class="fa-solid fa-comment"></i> 
                             </button>
                          </div>
-                         <div class="postButtonContainer">
-                            <button> 
+                         <div class="postButtonContainer green">
+                            <button class="retweet"> 
                             <i class="fa-solid fa-retweet"></i> 
                             </button>
                          </div>
-                         <div class="postButtonContainer">
-                            <button> 
+                         <div class="postButtonContainer red">
+                            <button class="likeButton ${likeButtonActiveClass}"> 
+                            <span> ${postData.likes.length || ""} </span>
                             <i class="fa-solid fa-heart"></i>
                             </button>
                          </div>
